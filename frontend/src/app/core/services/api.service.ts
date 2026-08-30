@@ -149,7 +149,18 @@ export class ApiService {
     let params = new HttpParams();
     if (search) params = params.set('search', search);
     return this.http.get<Customer[]>(`${this.apiUrl}/customers`, { params }).pipe(
-      catchError(() => of(this.mockCustomers))
+      catchError(() => {
+        let list = [...this.mockCustomers];
+        if (search) {
+          const q = search.toLowerCase();
+          list = list.filter(c =>
+            c.name.toLowerCase().includes(q) ||
+            (c.phone && c.phone.includes(q)) ||
+            (c.email && c.email.toLowerCase().includes(q))
+          );
+        }
+        return of(list);
+      })
     );
   }
 
@@ -255,7 +266,36 @@ export class ApiService {
     if (endDate) params = params.set('end_date', endDate);
     if (paymentMethod) params = params.set('payment_method', paymentMethod);
     return this.http.get<Invoice[]>(`${this.apiUrl}/invoices`, { params }).pipe(
-      catchError(() => of(this.mockInvoices))
+      catchError(() => {
+        let list = [...this.mockInvoices];
+        if (search) {
+          const q = search.toLowerCase();
+          list = list.filter(i =>
+            i.invoice_number.toLowerCase().includes(q) ||
+            i.customer_name.toLowerCase().includes(q) ||
+            (i.customer_phone && i.customer_phone.includes(q))
+          );
+        }
+        if (customerId) {
+          list = list.filter(i => i.customer_id === customerId);
+        }
+        if (paymentMethod) {
+          list = list.filter(i => i.payment_method.toLowerCase() === paymentMethod.toLowerCase());
+        }
+        if (startDate) {
+          list = list.filter(i => {
+            const invDate = i.created_at.slice(0, 10);
+            return invDate >= startDate;
+          });
+        }
+        if (endDate) {
+          list = list.filter(i => {
+            const invDate = i.created_at.slice(0, 10);
+            return invDate <= endDate;
+          });
+        }
+        return of(list);
+      })
     );
   }
 
