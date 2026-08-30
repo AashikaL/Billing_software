@@ -39,15 +39,14 @@ interface CartItem {
         </button>
       </div>
 
-      <!-- Quick Code Lightning Entry Box -->
+      <!-- Quick Code Entry Box -->
       <div class="quick-code-bar card">
         <div class="quick-code-wrapper">
-          <span class="quick-icon">⚡</span>
           <input
             #quickInput
             type="text"
             class="form-control quick-code-input"
-            placeholder="Type Quick Code (e.g. 1) OR Item Name ('tea', 'coffee') & press Enter..."
+            placeholder="Type Quick Code (e.g. 1) or Item Name & press Enter..."
             [(ngModel)]="quickCodeInput"
             (keydown.enter)="onQuickCodeSubmit($event)"
             autocomplete="off"
@@ -464,25 +463,25 @@ interface CartItem {
     }
 
     .quick-code-bar {
-      padding: 1.1rem 1.5rem;
+      padding: 0.45rem 0.75rem;
       background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #E0E7FF 100%);
-      border: 2px solid #6366F1; border-radius: 14px;
-      box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.18);
+      border: 1.5px solid #818CF8; border-radius: 8px;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
     }
-    .quick-code-wrapper { display: flex; gap: 0.85rem; align-items: center; }
-    .quick-icon { font-size: 1.6rem; }
+    .quick-code-wrapper { display: flex; gap: 0.5rem; align-items: center; }
     .quick-code-input {
-      font-size: 1.15rem; font-weight: 700; height: 50px; border: 2px solid #818CF8;
-      border-radius: 10px; background: white; color: #0F172A; padding-left: 1rem;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.03); transition: all 0.2s ease;
+      font-size: 0.9rem; font-weight: 600; height: 38px; border: 1.5px solid #A5B4FC;
+      border-radius: 6px; background: white; color: #0F172A; padding-left: 0.75rem;
+      transition: all 0.2s ease;
     }
     .quick-code-input:focus {
-      border-color: #4F46E5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2), inset 0 2px 4px rgba(0,0,0,0.03);
+      border-color: #4F46E5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.18);
     }
     .btn-add-code {
-      height: 50px; padding: 0 1.5rem; font-size: 1rem; font-weight: 800; border-radius: 10px;
+      height: 38px; padding: 0 1rem; font-size: 0.82rem; font-weight: 800; border-radius: 6px;
       background: linear-gradient(135deg, #4F46E5 0%, #3730A3 100%); border: none;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25); transition: all 0.2s ease; white-space: nowrap;
     }
     .btn-add-code:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4); }
     .quick-feedback {
