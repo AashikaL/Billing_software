@@ -35,5 +35,5 @@ export const routes: Routes = [
       { path: 'settings', component: SettingsComponent }
     ]
   },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: 'dashboard' }
 ];
