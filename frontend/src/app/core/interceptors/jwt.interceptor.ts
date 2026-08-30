@@ -1,11 +1,8 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
-  const token = localStorage.getItem('access_token');
+  const token = typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('access_token') : null;
   if (token) {
     req = req.clone({
       setHeaders: {
@@ -15,11 +12,6 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   }
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user_info');
-        router.navigate(['/auth/login']);
-      }
       return throwError(() => error);
     })
   );
