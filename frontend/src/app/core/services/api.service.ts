@@ -158,6 +158,12 @@ export class ApiService {
     return this.http.post<Product>(`${this.apiUrl}/products`, data).pipe(
       catchError(() => {
         const list = [...this.mockProducts];
+        const parseNum = (val: any, fallback: number): number => {
+          if (val === null || val === undefined || val === '') return fallback;
+          const parsed = Number(val);
+          return isNaN(parsed) ? fallback : parsed;
+        };
+
         const newP: Product = {
           id: Date.now(),
           shop_id: 1,
@@ -165,11 +171,11 @@ export class ApiService {
           sku: data.sku || `SKU-${Date.now().toString().slice(-4)}`,
           quick_code: data.quick_code || (list.length + 1).toString(),
           category: data.category || 'General',
-          purchase_price: Number(data.purchase_price) || 0,
-          selling_price: Number(data.selling_price) || 0,
-          stock_quantity: Number(data.stock_quantity) || 0,
-          low_stock_threshold: Number(data.low_stock_threshold) || 5,
-          gst_percentage: Number(data.gst_percentage) || 5,
+          purchase_price: parseNum(data.purchase_price, 0),
+          selling_price: parseNum(data.selling_price, 0),
+          stock_quantity: parseNum(data.stock_quantity, 0),
+          low_stock_threshold: parseNum(data.low_stock_threshold, 5),
+          gst_percentage: parseNum(data.gst_percentage, 0),
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -187,7 +193,23 @@ export class ApiService {
         const list = [...this.mockProducts];
         const p = list.find(x => x.id === id);
         if (p) {
-          Object.assign(p, data);
+          const parseNum = (val: any, fallback: number): number => {
+            if (val === null || val === undefined || val === '') return fallback;
+            const parsed = Number(val);
+            return isNaN(parsed) ? fallback : parsed;
+          };
+          if (data.name !== undefined) p.name = data.name;
+          if (data.sku !== undefined) p.sku = data.sku;
+          if (data.quick_code !== undefined) p.quick_code = data.quick_code;
+          if (data.category !== undefined) p.category = data.category;
+          if (data.purchase_price !== undefined) p.purchase_price = parseNum(data.purchase_price, p.purchase_price);
+          if (data.selling_price !== undefined) p.selling_price = parseNum(data.selling_price, p.selling_price);
+          if (data.stock_quantity !== undefined) p.stock_quantity = parseNum(data.stock_quantity, p.stock_quantity);
+          if (data.low_stock_threshold !== undefined) p.low_stock_threshold = parseNum(data.low_stock_threshold, p.low_stock_threshold);
+          if (data.gst_percentage !== undefined) p.gst_percentage = parseNum(data.gst_percentage, p.gst_percentage);
+          if (data.description !== undefined) p.description = data.description;
+          if (data.is_active !== undefined) p.is_active = data.is_active;
+          p.updated_at = new Date().toISOString();
           this.mockProducts = list;
         }
         return of(p || data);
