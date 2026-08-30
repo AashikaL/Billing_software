@@ -21,8 +21,8 @@ export class ApiService {
     return `http://${hostname}:8000/api`;
   }
 
-  // --- Mock Data Store for Static Deployment ---
-  private mockProducts: Product[] = [
+  // --- Persistent Mock Data Store for Static / Mobile Deployment ---
+  private defaultProducts: Product[] = [
     { id: 1, shop_id: 1, name: 'Special South Filter Coffee', sku: 'BEV-COF-001', quick_code: '1', category: 'Hot Beverages', purchase_price: 10, selling_price: 25, stock_quantity: 120, low_stock_threshold: 10, gst_percentage: 5, is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: 2, shop_id: 1, name: 'Masala Ginger Tea', sku: 'BEV-TEA-002', quick_code: '2', category: 'Hot Beverages', purchase_price: 8, selling_price: 20, stock_quantity: 85, low_stock_threshold: 10, gst_percentage: 5, is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
     { id: 3, shop_id: 1, name: 'Crispy Medu Vada (2 pcs)', sku: 'SNK-VAD-003', quick_code: '3', category: 'Snacks', purchase_price: 15, selling_price: 35, stock_quantity: 4, low_stock_threshold: 10, gst_percentage: 5, is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
@@ -33,16 +33,64 @@ export class ApiService {
     { id: 8, shop_id: 1, name: 'Crispy Onion Pakoda', sku: 'SNK-PAK-008', quick_code: '8', category: 'Snacks', purchase_price: 18, selling_price: 40, stock_quantity: 3, low_stock_threshold: 5, gst_percentage: 5, is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
   ];
 
-  private mockCustomers: Customer[] = [
+  private defaultCustomers: Customer[] = [
     { id: 1, shop_id: 1, name: 'Anand Kumar', phone: '9840123456', email: 'anand@gmail.com', total_orders: 14, total_spent: 3450, created_at: new Date().toISOString() },
     { id: 2, shop_id: 1, name: 'Priya Sundaram', phone: '9710987654', email: 'priya@gmail.com', total_orders: 8, total_spent: 1890, created_at: new Date().toISOString() },
     { id: 3, shop_id: 1, name: 'Karthik Raja', phone: '9940112233', total_orders: 5, total_spent: 1200, created_at: new Date().toISOString() }
   ];
 
-  private mockInvoices: Invoice[] = [
+  private defaultInvoices: Invoice[] = [
     { id: 1, shop_id: 1, invoice_number: 'INV-2026-0001', customer_name: 'Anand Kumar', customer_phone: '9840123456', subtotal: 120, gst_amount: 6, discount: 0, total_amount: 126, payment_method: 'Cash', status: 'paid', created_at: new Date().toISOString(), items: [{ id: 1, product_id: 1, product_name_snapshot: 'Special South Filter Coffee', sku_snapshot: 'BEV-COF-001', unit_price: 25, purchase_price_snapshot: 10, quantity: 2, gst_percentage: 5, gst_amount: 2.5, total_amount: 52.5 }] },
     { id: 2, shop_id: 1, invoice_number: 'INV-2026-0002', customer_name: 'Walk-in Customer', subtotal: 90, gst_amount: 4.5, discount: 0, total_amount: 94.5, payment_method: 'UPI', status: 'paid', created_at: new Date().toISOString(), items: [{ id: 2, product_id: 4, product_name_snapshot: 'Ghee Sambar Idli (2 pcs)', sku_snapshot: 'SNK-IDL-004', unit_price: 45, purchase_price_snapshot: 20, quantity: 2, gst_percentage: 5, gst_amount: 4.5, total_amount: 94.5 }] }
   ];
+
+  private get mockProducts(): Product[] {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = localStorage.getItem('pos_demo_products');
+      if (raw) {
+        try { return JSON.parse(raw); } catch (e) {}
+      }
+    }
+    return this.defaultProducts;
+  }
+
+  private set mockProducts(items: Product[]) {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try { localStorage.setItem('pos_demo_products', JSON.stringify(items)); } catch (e) {}
+    }
+  }
+
+  private get mockCustomers(): Customer[] {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = localStorage.getItem('pos_demo_customers');
+      if (raw) {
+        try { return JSON.parse(raw); } catch (e) {}
+      }
+    }
+    return this.defaultCustomers;
+  }
+
+  private set mockCustomers(items: Customer[]) {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try { localStorage.setItem('pos_demo_customers', JSON.stringify(items)); } catch (e) {}
+    }
+  }
+
+  private get mockInvoices(): Invoice[] {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = localStorage.getItem('pos_demo_invoices');
+      if (raw) {
+        try { return JSON.parse(raw); } catch (e) {}
+      }
+    }
+    return this.defaultInvoices;
+  }
+
+  private set mockInvoices(items: Invoice[]) {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try { localStorage.setItem('pos_demo_invoices', JSON.stringify(items)); } catch (e) {}
+    }
+  }
 
   // --- Dashboard ---
   getDashboardSummary(): Observable<DashboardSummary> {
@@ -103,23 +151,25 @@ export class ApiService {
   createProduct(data: any): Observable<Product> {
     return this.http.post<Product>(`${this.apiUrl}/products`, data).pipe(
       catchError(() => {
+        const list = [...this.mockProducts];
         const newP: Product = {
           id: Date.now(),
           shop_id: 1,
           name: data.name,
           sku: data.sku || `SKU-${Date.now().toString().slice(-4)}`,
-          quick_code: data.quick_code || (this.mockProducts.length + 1).toString(),
+          quick_code: data.quick_code || (list.length + 1).toString(),
           category: data.category || 'General',
-          purchase_price: data.purchase_price || 0,
-          selling_price: data.selling_price || 0,
-          stock_quantity: data.stock_quantity || 0,
-          low_stock_threshold: data.low_stock_threshold || 5,
-          gst_percentage: data.gst_percentage || 5,
+          purchase_price: Number(data.purchase_price) || 0,
+          selling_price: Number(data.selling_price) || 0,
+          stock_quantity: Number(data.stock_quantity) || 0,
+          low_stock_threshold: Number(data.low_stock_threshold) || 5,
+          gst_percentage: Number(data.gst_percentage) || 5,
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
-        this.mockProducts.unshift(newP);
+        list.unshift(newP);
+        this.mockProducts = list;
         return of(newP);
       })
     );
@@ -128,8 +178,12 @@ export class ApiService {
   updateProduct(id: number, data: any): Observable<Product> {
     return this.http.put<Product>(`${this.apiUrl}/products/${id}`, data).pipe(
       catchError(() => {
-        const p = this.mockProducts.find(x => x.id === id);
-        if (p) Object.assign(p, data);
+        const list = [...this.mockProducts];
+        const p = list.find(x => x.id === id);
+        if (p) {
+          Object.assign(p, data);
+          this.mockProducts = list;
+        }
         return of(p || data);
       })
     );
@@ -167,6 +221,7 @@ export class ApiService {
   createCustomer(data: any): Observable<Customer> {
     return this.http.post<Customer>(`${this.apiUrl}/customers`, data).pipe(
       catchError(() => {
+        const list = [...this.mockCustomers];
         const newC: Customer = {
           id: Date.now(),
           shop_id: 1,
@@ -177,7 +232,8 @@ export class ApiService {
           total_spent: 0,
           created_at: new Date().toISOString()
         };
-        this.mockCustomers.unshift(newC);
+        list.unshift(newC);
+        this.mockCustomers = list;
         return of(newC);
       })
     );
@@ -186,8 +242,12 @@ export class ApiService {
   updateCustomer(id: number, data: any): Observable<Customer> {
     return this.http.put<Customer>(`${this.apiUrl}/customers/${id}`, data).pipe(
       catchError(() => {
-        const c = this.mockCustomers.find(x => x.id === id);
-        if (c) Object.assign(c, data);
+        const list = [...this.mockCustomers];
+        const c = list.find(x => x.id === id);
+        if (c) {
+          Object.assign(c, data);
+          this.mockCustomers = list;
+        }
         return of(c || data);
       })
     );
@@ -320,10 +380,14 @@ export class ApiService {
   adjustStock(payload: any): Observable<InventoryTransaction> {
     return this.http.post<InventoryTransaction>(`${this.apiUrl}/inventory/adjust`, payload).pipe(
       catchError(() => {
-        const prod = this.mockProducts.find(p => p.id === payload.product_id);
+        const productsList = [...this.mockProducts];
+        const prod = productsList.find(p => p.id === payload.product_id);
         const prev = prod ? prod.stock_quantity : 0;
         const newStock = Math.max(0, prev + payload.quantity_change);
-        if (prod) prod.stock_quantity = newStock;
+        if (prod) {
+          prod.stock_quantity = newStock;
+          this.mockProducts = productsList;
+        }
         const trans: InventoryTransaction = {
           id: Date.now(),
           shop_id: 1,
