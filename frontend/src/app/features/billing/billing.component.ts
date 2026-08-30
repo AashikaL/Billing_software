@@ -30,7 +30,8 @@ interface CartItem {
             <span class="hotkey-chip"><kbd>End</kbd> / <kbd>Ctrl+Enter</kbd> Print Bill</span>
             <span class="hotkey-chip"><kbd>F2</kbd> Focus Input</span>
             <span class="hotkey-chip"><kbd>F4</kbd> Mode ({{ paymentMethod }})</span>
-            <span class="hotkey-chip"><kbd>Esc</kbd> Clear</span>
+            <span class="hotkey-chip"><kbd>Alt+C</kbd> / <kbd>Shift+Del</kbd> Clear Cart</span>
+            <span class="hotkey-chip"><kbd>Esc</kbd> Reset</span>
           </div>
         </div>
 
@@ -122,7 +123,17 @@ interface CartItem {
 
         <!-- Right Column: Cart & Invoice Checkout Panel -->
         <div class="checkout-panel card">
-          <h3 class="panel-title">🛒 Current Order Cart</h3>
+          <div class="cart-header-row">
+            <h3 class="panel-title">🛒 Current Order Cart</h3>
+            <button
+              class="btn-clear-cart"
+              *ngIf="cart.length > 0"
+              (click)="clearCart()"
+              title="Clear all cart items (Alt + C / Shift + Delete)"
+            >
+              🗑️ Clear All <kbd class="hotkey-kbd">Alt+C</kbd>
+            </button>
+          </div>
 
           <!-- Customer Selection -->
           <div class="customer-box">
@@ -515,7 +526,34 @@ interface CartItem {
     .stock-info { font-size: 0.7rem; color: #64748B; margin-top: 0.5rem; border-top: 1px dashed #E2E8F0; padding-top: 0.4rem; }
     
     .checkout-panel { display: flex; flex-direction: column; height: fit-content; }
-    .panel-title { font-size: 1.15rem; font-weight: 800; margin-bottom: 1.25rem; }
+    .cart-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+    .cart-header-row .panel-title { margin-bottom: 0; }
+    .btn-clear-cart {
+      background: #FEE2E2;
+      color: #991B1B;
+      border: 1px solid #FCA5A5;
+      padding: 0.3rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+    }
+    .btn-clear-cart:hover {
+      background: #EF4444;
+      color: white;
+      border-color: #DC2626;
+    }
+    .hotkey-kbd {
+      background: rgba(0, 0, 0, 0.1);
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      font-size: 0.68rem;
+      font-family: monospace;
+    }
     .cust-select-group { display: flex; gap: 0.5rem; }
     .cart-items-wrapper {
       max-height: 280px;
@@ -683,12 +721,27 @@ export class BillingComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    // Alt + C OR Shift + Delete OR Alt + Delete -> Clear All Cart Items
+    if ((event.altKey && (event.key === 'c' || event.key === 'C')) || (event.shiftKey && event.key === 'Delete') || (event.altKey && event.key === 'Delete')) {
+      event.preventDefault();
+      this.clearCart();
+      return;
+    }
+
     // Escape -> Reset Quick Code or Clear selection
     if (event.key === 'Escape') {
       this.quickCodeInput = '';
       this.quickCodeFeedback = '';
       this.focusQuickInput();
     }
+  }
+
+  clearCart() {
+    if (this.cart.length === 0) return;
+    this.cart = [];
+    this.discount = 0;
+    this.setQuickFeedback('🗑️ Cart cleared!', false);
+    this.focusQuickInput();
   }
 
   cyclePaymentMethod() {
