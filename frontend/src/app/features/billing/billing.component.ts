@@ -20,27 +20,23 @@ interface CartItem {
       <div class="top-billing-bar">
         <div class="billing-title-compact">
           <h1 class="page-title">⚡ Express POS</h1>
-          <span class="pos-status-badge">Live Terminal</span>
+          <span class="pos-status-badge">Live</span>
+        </div>
+
+        <!-- Ultra-Thin Inline Hotkey Strip -->
+        <div class="hotkey-banner-compact" *ngIf="showHotkeys">
+          <span class="hotkey-label">⚡ KEYS:</span>
+          <span class="hotkey-chip"><kbd>Enter</kbd> Add Item</span>
+          <span class="hotkey-chip clear-chip"><kbd>Alt+C</kbd> Clear Cart 🗑️</span>
+          <span class="hotkey-chip print-chip"><kbd>End</kbd> / <kbd>Ctrl+Enter</kbd> Print 🖨️</span>
+          <span class="hotkey-chip"><kbd>F2</kbd> Focus</span>
+          <span class="hotkey-chip"><kbd>F4</kbd> Pay ({{ paymentMethod }})</span>
+          <span class="hotkey-chip"><kbd>Esc</kbd> Reset</span>
         </div>
 
         <button class="btn-toggle-hotkeys" (click)="showHotkeys = !showHotkeys" [title]="showHotkeys ? 'Hide Hotkey Shortcuts Bar' : 'Show Hotkey Shortcuts Bar'">
-          ⌨️ {{ showHotkeys ? 'Hide Shortcuts' : 'Show Shortcuts' }}
+          ⌨️ {{ showHotkeys ? 'Hide Keys' : 'Keys' }}
         </button>
-      </div>
-
-      <!-- Dedicated High-Visibility Hotkey Legend Strip -->
-      <div class="hotkey-banner-wide card" *ngIf="showHotkeys">
-        <div class="hotkey-header-tag">
-          ⚡ <strong>KEYBOARD SHORTCUTS</strong>
-        </div>
-        <div class="hotkey-grid">
-          <div class="hotkey-item"><kbd>Code / Name + Enter</kbd> <span>Add Item</span></div>
-          <div class="hotkey-item clear-item"><kbd>Alt + C</kbd> or <kbd>Shift + Del</kbd> <strong>Clear Cart 🗑️</strong></div>
-          <div class="hotkey-item print-item"><kbd>End</kbd> or <kbd>Ctrl + Enter</kbd> <strong>Print Bill 🖨️</strong></div>
-          <div class="hotkey-item"><kbd>F2</kbd> <span>Focus Search</span></div>
-          <div class="hotkey-item"><kbd>F4</kbd> <span>Pay: <strong>{{ paymentMethod }}</strong></span></div>
-          <div class="hotkey-item"><kbd>Esc</kbd> <span>Reset</span></div>
-        </div>
       </div>
 
       <!-- Quick Code Lightning Entry Box -->
@@ -391,64 +387,62 @@ interface CartItem {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 0.6rem;
       background: white;
-      padding: 0.75rem 1.25rem;
-      border-radius: 12px;
+      padding: 0.45rem 0.85rem;
+      border-radius: 10px;
       border: 1px solid var(--border-color);
-      margin-bottom: 0.75rem;
-    }
-    .hotkey-banner-wide {
-      background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
-      color: white;
-      padding: 0.85rem 1.25rem;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
-    }
-    .hotkey-header-tag {
-      font-size: 0.78rem;
-      color: #38BDF8;
-      letter-spacing: 0.5px;
       margin-bottom: 0.65rem;
-      text-transform: uppercase;
     }
-    .hotkey-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem 1.25rem;
-      align-items: center;
-    }
-    .hotkey-item {
+    .hotkey-banner-compact {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      font-size: 0.82rem;
-      color: #E2E8F0;
-    }
-    .hotkey-item.clear-item {
-      background: rgba(239, 68, 68, 0.15);
-      padding: 0.2rem 0.55rem;
+      gap: 0.5rem;
+      background: #0F172A;
+      color: white;
+      padding: 0.25rem 0.6rem;
       border-radius: 6px;
-      border: 1px solid rgba(239, 68, 68, 0.4);
+      flex: 1;
+      justify-content: flex-end;
+      overflow-x: auto;
+    }
+    .hotkey-label {
+      font-weight: 800;
+      font-size: 0.68rem;
+      color: #38BDF8;
+      white-space: nowrap;
+      letter-spacing: 0.5px;
+    }
+    .hotkey-chip {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #CBD5E1;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .hotkey-chip.clear-chip {
       color: #FECACA;
+      background: rgba(239, 68, 68, 0.15);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
     }
-    .hotkey-item.print-item {
-      background: rgba(99, 102, 241, 0.2);
-      padding: 0.2rem 0.55rem;
-      border-radius: 6px;
-      border: 1px solid rgba(129, 140, 248, 0.4);
+    .hotkey-chip.print-chip {
       color: #E0E7FF;
+      background: rgba(99, 102, 241, 0.2);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
     }
     kbd {
       background: #4F46E5;
       color: #FFFFFF;
       font-weight: 800;
-      padding: 0.2rem 0.5rem;
-      border-radius: 5px;
+      padding: 0.08rem 0.35rem;
+      border-radius: 4px;
       border: 1px solid #818CF8;
-      font-size: 0.75rem;
-      letter-spacing: 0.3px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      font-size: 0.68rem;
+      letter-spacing: 0.2px;
       font-family: inherit;
     }
     .btn-toggle-hotkeys {
