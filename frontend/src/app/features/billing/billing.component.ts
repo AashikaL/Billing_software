@@ -397,52 +397,52 @@ interface CartItem {
     .hotkey-banner-compact {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.35rem;
       background: #0F172A;
       color: white;
-      padding: 0.25rem 0.6rem;
-      border-radius: 6px;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
       flex: 1;
       justify-content: flex-end;
       overflow-x: auto;
     }
     .hotkey-label {
       font-weight: 800;
-      font-size: 0.68rem;
+      font-size: 0.6rem;
       color: #38BDF8;
       white-space: nowrap;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
     }
     .hotkey-chip {
-      font-size: 0.72rem;
+      font-size: 0.62rem;
       font-weight: 600;
       color: #CBD5E1;
       white-space: nowrap;
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.2rem;
     }
     .hotkey-chip.clear-chip {
       color: #FECACA;
       background: rgba(239, 68, 68, 0.15);
-      padding: 0.1rem 0.35rem;
-      border-radius: 4px;
+      padding: 0.05rem 0.25rem;
+      border-radius: 3px;
     }
     .hotkey-chip.print-chip {
       color: #E0E7FF;
       background: rgba(99, 102, 241, 0.2);
-      padding: 0.1rem 0.35rem;
-      border-radius: 4px;
+      padding: 0.05rem 0.25rem;
+      border-radius: 3px;
     }
     kbd {
       background: #4F46E5;
       color: #FFFFFF;
       font-weight: 800;
-      padding: 0.08rem 0.35rem;
-      border-radius: 4px;
+      padding: 0.04rem 0.22rem;
+      border-radius: 3px;
       border: 1px solid #818CF8;
-      font-size: 0.68rem;
-      letter-spacing: 0.2px;
+      font-size: 0.58rem;
+      letter-spacing: 0.1px;
       font-family: inherit;
     }
     .btn-toggle-hotkeys {
