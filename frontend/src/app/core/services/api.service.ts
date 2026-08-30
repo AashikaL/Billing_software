@@ -129,6 +129,12 @@ export class ApiService {
     );
   }
 
+  importProductsData(items: Product[]): void {
+    if (Array.isArray(items) && items.length > 0) {
+      this.mockProducts = items;
+    }
+  }
+
   getProducts(search?: string, category?: string, lowStockOnly?: boolean): Observable<Product[]> {
     let params = new HttpParams();
     if (search) params = params.set('search', search);

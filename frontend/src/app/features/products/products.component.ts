@@ -15,7 +15,12 @@ import { Product } from '../../core/models/models';
           <h1 class="page-title">Product Catalogue</h1>
           <p class="page-subtitle">Manage items, pricing, GST percentages, and stock limits</p>
         </div>
-        <button class="btn btn-primary" (click)="openAddModal()">+ Add New Product</button>
+        <div class="header-btn-group">
+          <button class="btn btn-secondary" (click)="exportData()" title="Backup products to a JSON file">📤 Export Data</button>
+          <button class="btn btn-secondary" (click)="fileInput.click()" title="Import products from a backup file">📥 Import Data</button>
+          <input #fileInput type="file" (change)="onFileSelected($event)" accept=".json" style="display: none;" />
+          <button class="btn btn-primary" (click)="openAddModal()">+ Add New Product</button>
+        </div>
       </div>
 
       <!-- Filters & Search Toolbar -->
@@ -273,6 +278,7 @@ import { Product } from '../../core/models/models';
       padding: 0.25rem 0.6rem; border-radius: 5px; font-weight: 700; font-size: 0.75rem; cursor: pointer;
       box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2); transition: all 0.2s;
     }
+    .header-btn-group { display: flex; gap: 0.6rem; align-items: center; }
     .btn-use-suggested:hover { background: #3730A3; transform: translateY(-1px); }
     .is-invalid { border-color: #DC2626 !important; }
     .field-error { color: #DC2626; font-size: 0.75rem; font-weight: 700; margin-top: 0.25rem; }
@@ -294,6 +300,37 @@ export class ProductsComponent implements OnInit {
   suggestedQuickCode = '';
   quickCodeConflict: { isDuplicate: boolean; existingProductName?: string } | null = null;
   skuConflict: { isDuplicate: boolean; existingProductName?: string } | null = null;
+
+  exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.products, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `express_pos_products_${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      try {
+        const importedProducts = JSON.parse(e.target.result);
+        if (Array.isArray(importedProducts) && importedProducts.length > 0) {
+          this.apiService.importProductsData(importedProducts);
+          this.loadProducts();
+          alert(`✅ Successfully imported ${importedProducts.length} products to this device!`);
+        } else {
+          alert('❌ Invalid JSON backup file.');
+        }
+      } catch (err) {
+        alert('❌ Error reading JSON backup file.');
+      }
+    };
+    reader.readAsText(file);
+  }
 
   productForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
