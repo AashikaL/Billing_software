@@ -32,8 +32,9 @@ export const routes: Routes = [
       { path: 'invoices', component: InvoicesComponent },
       { path: 'reports', component: ReportsComponent },
       { path: 'ai-assistant', component: AiAssistantComponent },
-      { path: 'settings', component: SettingsComponent }
+      { path: 'settings', component: SettingsComponent },
+      { path: '**', redirectTo: 'dashboard' }
     ]
   },
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '**', redirectTo: '' }
 ];

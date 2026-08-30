@@ -27,40 +27,40 @@ import { Shop, User } from '../../core/models/models';
         </div>
 
         <nav class="sidebar-nav">
-          <a routerLink="/dashboard" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Dashboard' : ''">
+          <a [routerLink]="['/dashboard']" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Dashboard' : ''">
             <span class="nav-icon">📊</span>
             <span class="nav-text" *ngIf="!isCollapsed">Dashboard</span>
           </a>
-          <a routerLink="/billing" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item highlight-nav" [title]="isCollapsed ? 'Create Bill / POS' : ''">
+          <a [routerLink]="['/billing']" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item highlight-nav" [title]="isCollapsed ? 'Create Bill / POS' : ''">
             <span class="nav-icon">💳</span>
             <span class="nav-text" *ngIf="!isCollapsed">Create Bill / POS</span>
           </a>
-          <a routerLink="/products" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Products' : ''">
+          <a [routerLink]="['/products']" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Products' : ''">
             <span class="nav-icon">📦</span>
             <span class="nav-text" *ngIf="!isCollapsed">Products</span>
           </a>
-          <a routerLink="/customers" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Customers' : ''">
+          <a [routerLink]="['/customers']" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Customers' : ''">
             <span class="nav-icon">👥</span>
             <span class="nav-text" *ngIf="!isCollapsed">Customers</span>
           </a>
-          <a routerLink="/inventory" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Inventory' : ''">
+          <a [routerLink]="['/inventory']" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Inventory' : ''">
             <span class="nav-icon">🏬</span>
             <span class="nav-text" *ngIf="!isCollapsed">Inventory</span>
           </a>
-          <a routerLink="/invoices" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Bill History' : ''">
+          <a [routerLink]="['/invoices']" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Bill History' : ''">
             <span class="nav-icon">📄</span>
             <span class="nav-text" *ngIf="!isCollapsed">Bill History</span>
           </a>
-          <a routerLink="/reports" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Financial Reports' : ''">
+          <a [routerLink]="['/reports']" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Financial Reports' : ''">
             <span class="nav-icon">📈</span>
             <span class="nav-text" *ngIf="!isCollapsed">Financial Reports</span>
           </a>
-          <a routerLink="/ai-assistant" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item ai-nav" [title]="isCollapsed ? 'AI Assistant' : ''">
+          <a [routerLink]="['/ai-assistant']" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item ai-nav" [title]="isCollapsed ? 'AI Assistant' : ''">
             <span class="nav-icon">🤖</span>
             <span class="nav-text" *ngIf="!isCollapsed">AI Assistant</span>
             <span class="ai-badge" *ngIf="!isCollapsed">AI</span>
           </a>
-          <a routerLink="/settings" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Settings' : ''">
+          <a [routerLink]="['/settings']" (click)="closeMobileOnNav()" routerLinkActive="active" class="nav-item" [title]="isCollapsed ? 'Settings' : ''">
             <span class="nav-icon">⚙️</span>
             <span class="nav-text" *ngIf="!isCollapsed">Settings</span>
           </a>
@@ -91,10 +91,10 @@ import { Shop, User } from '../../core/models/models';
             </div>
           </div>
           <div class="header-actions">
-            <a routerLink="/ai-assistant" class="btn btn-secondary btn-sm ai-btn">
+            <a [routerLink]="['/ai-assistant']" class="btn btn-secondary btn-sm ai-btn">
               🤖 <span class="action-text">Ask AI</span>
             </a>
-            <a routerLink="/billing" class="btn btn-primary btn-sm">
+            <a [routerLink]="['/billing']" class="btn btn-primary btn-sm">
               + <span class="action-text">New Bill</span>
             </a>
           </div>
