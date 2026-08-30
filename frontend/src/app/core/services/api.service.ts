@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of, catchError } from 'rxjs';
+import { Observable, of, catchError, map } from 'rxjs';
 import {
   Product,
   Customer,
@@ -129,9 +129,32 @@ export class ApiService {
     );
   }
 
+  // --- Global Shared Cloud Database for Multi-Device Real-time Sync ---
+  private cloudStorageUrl = 'https://api.restful-api.dev/objects/ff808181a04ccf2d01a051b2d02e1532';
+
+  private fetchCloudData(): Observable<{ products?: Product[], customers?: Customer[], invoices?: Invoice[] } | null> {
+    return this.http.get<any>(this.cloudStorageUrl).pipe(
+      map((res: any) => res?.data || null),
+      catchError(() => of(null))
+    );
+  }
+
+  private saveCloudData(products?: Product[], customers?: Customer[], invoices?: Invoice[]): void {
+    const payload = {
+      name: 'Express POS Global Database',
+      data: {
+        products: products || this.mockProducts,
+        customers: customers || this.mockCustomers,
+        invoices: invoices || this.mockInvoices
+      }
+    };
+    this.http.put(this.cloudStorageUrl, payload).pipe(catchError(() => of(null))).subscribe();
+  }
+
   importProductsData(items: Product[]): void {
     if (Array.isArray(items) && items.length > 0) {
       this.mockProducts = items;
+      this.saveCloudData(items);
     }
   }
 
@@ -142,14 +165,21 @@ export class ApiService {
     if (lowStockOnly) params = params.set('low_stock_only', 'true');
     return this.http.get<Product[]>(`${this.apiUrl}/products`, { params }).pipe(
       catchError(() => {
-        let list = [...this.mockProducts];
-        if (category) list = list.filter(p => p.category === category);
-        if (search) {
-          const q = search.toLowerCase();
-          list = list.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q));
-        }
-        if (lowStockOnly) list = list.filter(p => p.stock_quantity <= p.low_stock_threshold);
-        return of(list);
+        return this.fetchCloudData().pipe(
+          map((cloud: any) => {
+            if (cloud && cloud.products && Array.isArray(cloud.products) && cloud.products.length > 0) {
+              this.mockProducts = cloud.products;
+            }
+            let list = [...this.mockProducts];
+            if (category) list = list.filter(p => p.category === category);
+            if (search) {
+              const q = search.toLowerCase();
+              list = list.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q));
+            }
+            if (lowStockOnly) list = list.filter(p => p.stock_quantity <= p.low_stock_threshold);
+            return list;
+          })
+        );
       })
     );
   }
@@ -182,6 +212,7 @@ export class ApiService {
         };
         list.unshift(newP);
         this.mockProducts = list;
+        this.saveCloudData(list);
         return of(newP);
       })
     );
@@ -211,6 +242,7 @@ export class ApiService {
           if (data.is_active !== undefined) p.is_active = data.is_active;
           p.updated_at = new Date().toISOString();
           this.mockProducts = list;
+          this.saveCloudData(list);
         }
         return of(p || data);
       })
@@ -220,7 +252,9 @@ export class ApiService {
   deleteProduct(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/products/${id}`).pipe(
       catchError(() => {
-        this.mockProducts = this.mockProducts.filter(x => x.id !== id);
+        const list = this.mockProducts.filter(x => x.id !== id);
+        this.mockProducts = list;
+        this.saveCloudData(list);
         return of(undefined as any);
       })
     );
@@ -262,6 +296,7 @@ export class ApiService {
         };
         list.unshift(newC);
         this.mockCustomers = list;
+        this.saveCloudData();
         return of(newC);
       })
     );
@@ -275,6 +310,7 @@ export class ApiService {
         if (c) {
           Object.assign(c, data);
           this.mockCustomers = list;
+          this.saveCloudData();
         }
         return of(c || data);
       })
@@ -284,7 +320,9 @@ export class ApiService {
   deleteCustomer(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/customers/${id}`).pipe(
       catchError(() => {
-        this.mockCustomers = this.mockCustomers.filter(x => x.id !== id);
+        const list = this.mockCustomers.filter(x => x.id !== id);
+        this.mockCustomers = list;
+        this.saveCloudData();
         return of(undefined as any);
       })
     );
@@ -296,33 +334,36 @@ export class ApiService {
       catchError(() => {
         let subtotal = 0;
         let totalGst = 0;
+        const productsList = [...this.mockProducts];
         const items = payload.items.map((itemPayload: any, idx: number) => {
-          const prod = this.mockProducts.find(p => p.id === itemPayload.product_id) || this.mockProducts[0];
-          if (prod.stock_quantity > 0) {
+          const prod = productsList.find(p => p.id === itemPayload.product_id) || productsList[0];
+          if (prod && prod.stock_quantity > 0) {
             prod.stock_quantity = Math.max(0, prod.stock_quantity - itemPayload.quantity);
           }
-          const itemBase = prod.selling_price * itemPayload.quantity;
-          const itemGst = (itemBase * prod.gst_percentage) / 100.0;
+          const itemBase = (prod ? prod.selling_price : 0) * itemPayload.quantity;
+          const itemGst = (itemBase * (prod ? prod.gst_percentage : 5)) / 100.0;
           subtotal += itemBase;
           totalGst += itemGst;
           return {
             id: idx + 1,
-            product_id: prod.id,
-            product_name_snapshot: prod.name,
-            sku_snapshot: prod.sku,
-            unit_price: prod.selling_price,
-            purchase_price_snapshot: prod.purchase_price,
+            product_id: prod ? prod.id : 1,
+            product_name_snapshot: prod ? prod.name : 'Product',
+            sku_snapshot: prod ? prod.sku : 'SKU-001',
+            unit_price: prod ? prod.selling_price : 0,
+            purchase_price_snapshot: prod ? prod.purchase_price : 0,
             quantity: itemPayload.quantity,
-            gst_percentage: prod.gst_percentage,
+            gst_percentage: prod ? prod.gst_percentage : 5,
             gst_amount: itemGst,
             total_amount: itemBase + itemGst
           };
         });
+        this.mockProducts = productsList;
 
         const cust = this.mockCustomers.find(c => c.id === payload.customer_id);
         const grandTotal = Math.max(0, (subtotal + totalGst) - (payload.discount || 0));
 
-        const invoiceNum = `INV-2026-${(this.mockInvoices.length + 1).toString().padStart(4, '0')}`;
+        const invoicesList = [...this.mockInvoices];
+        const invoiceNum = `INV-2026-${(invoicesList.length + 1).toString().padStart(4, '0')}`;
         const newInvoice: Invoice = {
           id: Date.now(),
           shop_id: 1,
@@ -339,7 +380,9 @@ export class ApiService {
           items: items
         };
 
-        this.mockInvoices.unshift(newInvoice);
+        invoicesList.unshift(newInvoice);
+        this.mockInvoices = invoicesList;
+        this.saveCloudData(productsList, undefined, invoicesList);
         return of(newInvoice);
       })
     );
