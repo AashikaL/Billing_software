@@ -243,7 +243,7 @@ import { Product } from '../../core/models/models';
 
             <div *ngIf="modalError" class="alert alert-danger">{{ modalError }}</div>
 
-            <button type="submit" class="btn btn-primary btn-block mt-3" [disabled]="productForm.invalid || isSaving || quickCodeConflict?.isDuplicate || skuConflict?.isDuplicate">
+            <button type="submit" class="btn btn-primary btn-block mt-3" [disabled]="isSaving">
               {{ isSaving ? 'Saving...' : (editingProduct ? 'Update Product' : 'Save Product') }}
             </button>
           </form>
@@ -434,17 +434,29 @@ export class ProductsComponent implements OnInit {
   }
 
   onSubmit() {
+    // Auto-generate SKU if left blank by user
+    const currentSku = this.productForm.value.sku;
+    if (!currentSku || !currentSku.trim()) {
+      const namePrefix = (this.productForm.value.name || 'PRD').slice(0, 3).toUpperCase();
+      const autoSku = `${namePrefix}-${Date.now().toString().slice(-4)}`;
+      this.productForm.patchValue({ sku: autoSku });
+    }
+
     this.productForm.markAllAsTouched();
-    if (this.productForm.invalid) {
-      this.modalError = 'Please fix the validation errors marked in red above.';
-      return;
-    }
-    if (this.quickCodeConflict?.isDuplicate) {
-      this.modalError = `Quick Code '#${this.productForm.value.quick_code}' is already assigned to '${this.quickCodeConflict.existingProductName}'. Please use available code ${this.suggestedQuickCode}.`;
-      return;
-    }
-    if (this.skuConflict?.isDuplicate) {
-      this.modalError = `SKU '${this.productForm.value.sku}' is already assigned to '${this.skuConflict.existingProductName}'.`;
+    this.checkQuickCodeAvailability();
+    this.checkSkuAvailability();
+
+    if (this.productForm.invalid || this.quickCodeConflict?.isDuplicate || this.skuConflict?.isDuplicate) {
+      const errList: string[] = [];
+      if (this.productForm.get('name')?.invalid) errList.push('Product Name is required (min 2 characters).');
+      if (this.productForm.get('selling_price')?.invalid) errList.push('Selling Price must be greater than ₹0.');
+      if (this.productForm.get('purchase_price')?.invalid) errList.push('Purchase Price cannot be negative.');
+      if (this.productForm.get('gst_percentage')?.invalid) errList.push('GST % must be between 0 and 100.');
+      if (this.productForm.get('stock_quantity')?.invalid) errList.push('Stock Quantity cannot be negative.');
+      if (this.quickCodeConflict?.isDuplicate) errList.push(`Quick Code '#${this.productForm.value.quick_code}' is taken by '${this.quickCodeConflict.existingProductName}'.`);
+      if (this.skuConflict?.isDuplicate) errList.push(`SKU '${this.productForm.value.sku}' is taken by '${this.skuConflict.existingProductName}'.`);
+
+      this.modalError = '⚠️ Cannot save product:\n• ' + errList.join('\n• ');
       return;
     }
     this.isSaving = true;
