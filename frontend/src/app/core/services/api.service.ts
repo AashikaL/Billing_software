@@ -16,7 +16,10 @@ import {
 })
 export class ApiService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8000/api';
+  private get apiUrl(): string {
+    const hostname = typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : 'localhost';
+    return `http://${hostname}:8000/api`;
+  }
 
   // --- Dashboard ---
   getDashboardSummary(): Observable<DashboardSummary> {
