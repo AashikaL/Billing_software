@@ -128,7 +128,16 @@ import { Product } from '../../core/models/models';
               </div>
               <div class="form-group col-8">
                 <label class="form-label">Product Name *</label>
-                <input type="text" class="form-control" formControlName="name" placeholder="Masala Tea" />
+                <input
+                  type="text"
+                  class="form-control"
+                  [class.is-invalid]="productForm.get('name')?.touched && productForm.get('name')?.invalid"
+                  formControlName="name"
+                  placeholder="Masala Tea"
+                />
+                <div *ngIf="productForm.get('name')?.touched && productForm.get('name')?.invalid" class="field-error">
+                  ❌ Product Name is required (min 2 chars).
+                </div>
               </div>
             </div>
 
@@ -138,44 +147,92 @@ import { Product } from '../../core/models/models';
                 <input
                   type="text"
                   class="form-control"
-                  [class.is-invalid]="skuConflict?.isDuplicate"
+                  [class.is-invalid]="(productForm.get('sku')?.touched && productForm.get('sku')?.invalid) || skuConflict?.isDuplicate"
                   formControlName="sku"
                   placeholder="MS-001"
                   (input)="checkSkuAvailability()"
                 />
+                <div *ngIf="productForm.get('sku')?.touched && productForm.get('sku')?.invalid" class="field-error">
+                  ❌ SKU / Code is required.
+                </div>
                 <div *ngIf="skuConflict?.isDuplicate" class="qc-feedback error">
                   ❌ SKU '{{ productForm.value.sku }}' is used by <strong>{{ skuConflict?.existingProductName }}</strong>!
                 </div>
               </div>
               <div class="form-group col">
                 <label class="form-label">Category</label>
-                <input type="text" class="form-control" formControlName="category" placeholder="Electronics" />
+                <input type="text" class="form-control" formControlName="category" placeholder="General" />
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group col">
                 <label class="form-label">Purchase Price (₹) *</label>
-                <input type="number" class="form-control" formControlName="purchase_price" min="0" step="0.01" />
+                <input
+                  type="number"
+                  class="form-control"
+                  [class.is-invalid]="productForm.get('purchase_price')?.touched && productForm.get('purchase_price')?.invalid"
+                  formControlName="purchase_price"
+                  min="0"
+                  step="0.01"
+                />
+                <div *ngIf="productForm.get('purchase_price')?.touched && productForm.get('purchase_price')?.invalid" class="field-error">
+                  ❌ Purchase price cannot be negative.
+                </div>
               </div>
               <div class="form-group col">
                 <label class="form-label">Selling Price (₹) *</label>
-                <input type="number" class="form-control" formControlName="selling_price" min="0" step="0.01" />
+                <input
+                  type="number"
+                  class="form-control"
+                  [class.is-invalid]="productForm.get('selling_price')?.touched && productForm.get('selling_price')?.invalid"
+                  formControlName="selling_price"
+                  min="0.01"
+                  step="0.01"
+                />
+                <div *ngIf="productForm.get('selling_price')?.touched && productForm.get('selling_price')?.invalid" class="field-error">
+                  ❌ Selling price must be greater than ₹0.
+                </div>
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group col">
                 <label class="form-label">GST Percentage (%) *</label>
-                <input type="number" class="form-control" formControlName="gst_percentage" min="0" max="100" />
+                <input
+                  type="number"
+                  class="form-control"
+                  [class.is-invalid]="productForm.get('gst_percentage')?.touched && productForm.get('gst_percentage')?.invalid"
+                  formControlName="gst_percentage"
+                  min="0"
+                  max="100"
+                />
+                <div *ngIf="productForm.get('gst_percentage')?.touched && productForm.get('gst_percentage')?.invalid" class="field-error">
+                  ❌ GST % must be between 0 and 100.
+                </div>
               </div>
               <div class="form-group col">
                 <label class="form-label">Stock Quantity *</label>
-                <input type="number" class="form-control" formControlName="stock_quantity" min="0" />
+                <input
+                  type="number"
+                  class="form-control"
+                  [class.is-invalid]="productForm.get('stock_quantity')?.touched && productForm.get('stock_quantity')?.invalid"
+                  formControlName="stock_quantity"
+                  min="0"
+                />
+                <div *ngIf="productForm.get('stock_quantity')?.touched && productForm.get('stock_quantity')?.invalid" class="field-error">
+                  ❌ Stock cannot be negative.
+                </div>
               </div>
               <div class="form-group col">
                 <label class="form-label">Low Stock Threshold *</label>
-                <input type="number" class="form-control" formControlName="low_stock_threshold" min="0" />
+                <input
+                  type="number"
+                  class="form-control"
+                  [class.is-invalid]="productForm.get('low_stock_threshold')?.touched && productForm.get('low_stock_threshold')?.invalid"
+                  formControlName="low_stock_threshold"
+                  min="0"
+                />
               </div>
             </div>
 
@@ -218,6 +275,7 @@ import { Product } from '../../core/models/models';
     }
     .btn-use-suggested:hover { background: #3730A3; transform: translateY(-1px); }
     .is-invalid { border-color: #DC2626 !important; }
+    .field-error { color: #DC2626; font-size: 0.75rem; font-weight: 700; margin-top: 0.25rem; }
   `]
 })
 export class ProductsComponent implements OnInit {
@@ -238,13 +296,13 @@ export class ProductsComponent implements OnInit {
   skuConflict: { isDuplicate: boolean; existingProductName?: string } | null = null;
 
   productForm = this.fb.group({
-    name: ['', Validators.required],
+    name: ['', [Validators.required, Validators.minLength(2)]],
     sku: ['', Validators.required],
     quick_code: [''],
-    category: ['General'],
+    category: ['General', Validators.required],
     purchase_price: [0, [Validators.required, Validators.min(0)]],
-    selling_price: [0, [Validators.required, Validators.min(0)]],
-    gst_percentage: [18, [Validators.required, Validators.min(0), Validators.max(100)]],
+    selling_price: [25, [Validators.required, Validators.min(0.01)]],
+    gst_percentage: [5, [Validators.required, Validators.min(0), Validators.max(100)]],
     stock_quantity: [10, [Validators.required, Validators.min(0)]],
     low_stock_threshold: [5, [Validators.required, Validators.min(0)]],
     description: ['']
@@ -376,7 +434,11 @@ export class ProductsComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.productForm.invalid) return;
+    this.productForm.markAllAsTouched();
+    if (this.productForm.invalid) {
+      this.modalError = 'Please fix the validation errors marked in red above.';
+      return;
+    }
     if (this.quickCodeConflict?.isDuplicate) {
       this.modalError = `Quick Code '#${this.productForm.value.quick_code}' is already assigned to '${this.quickCodeConflict.existingProductName}'. Please use available code ${this.suggestedQuickCode}.`;
       return;
