@@ -129,32 +129,9 @@ export class ApiService {
     );
   }
 
-  // --- Global Shared Cloud Database for Multi-Device Real-time Sync ---
-  private cloudStorageUrl = 'https://api.restful-api.dev/objects/ff808181a04ccf2d01a051b2d02e1532';
-
-  private fetchCloudData(): Observable<{ products?: Product[], customers?: Customer[], invoices?: Invoice[] } | null> {
-    return this.http.get<any>(this.cloudStorageUrl).pipe(
-      map((res: any) => res?.data || null),
-      catchError(() => of(null))
-    );
-  }
-
-  private saveCloudData(products?: Product[], customers?: Customer[], invoices?: Invoice[]): void {
-    const payload = {
-      name: 'Express POS Global Database',
-      data: {
-        products: products || this.mockProducts,
-        customers: customers || this.mockCustomers,
-        invoices: invoices || this.mockInvoices
-      }
-    };
-    this.http.put(this.cloudStorageUrl, payload).pipe(catchError(() => of(null))).subscribe();
-  }
-
   importProductsData(items: Product[]): void {
     if (Array.isArray(items) && items.length > 0) {
       this.mockProducts = items;
-      this.saveCloudData(items);
     }
   }
 
@@ -165,21 +142,14 @@ export class ApiService {
     if (lowStockOnly) params = params.set('low_stock_only', 'true');
     return this.http.get<Product[]>(`${this.apiUrl}/products`, { params }).pipe(
       catchError(() => {
-        return this.fetchCloudData().pipe(
-          map((cloud: any) => {
-            if (cloud && cloud.products && Array.isArray(cloud.products) && cloud.products.length > 0) {
-              this.mockProducts = cloud.products;
-            }
-            let list = [...this.mockProducts];
-            if (category) list = list.filter(p => p.category === category);
-            if (search) {
-              const q = search.toLowerCase();
-              list = list.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q));
-            }
-            if (lowStockOnly) list = list.filter(p => p.stock_quantity <= p.low_stock_threshold);
-            return list;
-          })
-        );
+        let list = [...this.mockProducts];
+        if (category) list = list.filter(p => p.category === category);
+        if (search) {
+          const q = search.toLowerCase();
+          list = list.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q));
+        }
+        if (lowStockOnly) list = list.filter(p => p.stock_quantity <= p.low_stock_threshold);
+        return of(list);
       })
     );
   }
@@ -212,7 +182,6 @@ export class ApiService {
         };
         list.unshift(newP);
         this.mockProducts = list;
-        this.saveCloudData(list);
         return of(newP);
       })
     );
@@ -242,7 +211,6 @@ export class ApiService {
           if (data.is_active !== undefined) p.is_active = data.is_active;
           p.updated_at = new Date().toISOString();
           this.mockProducts = list;
-          this.saveCloudData(list);
         }
         return of(p || data);
       })
@@ -254,7 +222,6 @@ export class ApiService {
       catchError(() => {
         const list = this.mockProducts.filter(x => x.id !== id);
         this.mockProducts = list;
-        this.saveCloudData(list);
         return of(undefined as any);
       })
     );
@@ -296,7 +263,6 @@ export class ApiService {
         };
         list.unshift(newC);
         this.mockCustomers = list;
-        this.saveCloudData();
         return of(newC);
       })
     );
@@ -310,7 +276,6 @@ export class ApiService {
         if (c) {
           Object.assign(c, data);
           this.mockCustomers = list;
-          this.saveCloudData();
         }
         return of(c || data);
       })
@@ -322,7 +287,6 @@ export class ApiService {
       catchError(() => {
         const list = this.mockCustomers.filter(x => x.id !== id);
         this.mockCustomers = list;
-        this.saveCloudData();
         return of(undefined as any);
       })
     );
@@ -382,7 +346,6 @@ export class ApiService {
 
         invoicesList.unshift(newInvoice);
         this.mockInvoices = invoicesList;
-        this.saveCloudData(productsList, undefined, invoicesList);
         return of(newInvoice);
       })
     );
